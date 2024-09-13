@@ -1,2 +1,2 @@
-# telegram_bot
-A test repo of understanding Telegram_bot
+# KST_MINI_BOOKMARK TELEGRAM Mini App
+A test repo of creating mini bookmark app embedded in telegram chat
