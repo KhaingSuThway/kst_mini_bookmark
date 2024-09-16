@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myanmar Recipes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Myanmar Recipes</h1>
+    <button onclick="scrapeRecipes()">Scrape Recipes</button>
+    <button onclick="downloadCSV()">Download CSV</button>
+    <div id="message"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Ingredients</th>
+                <th>Instructions</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for recipe in recipes %}
+            <tr>
+                <td>{{ recipe.name }}</td>
+                <td>
+                    <ul>
+                    {% for ingredient in recipe.ingredients %}
+                        <li>{{ ingredient }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ol>
+                    {% for instruction in recipe.instructions %}
+                        <li>{{ instruction }}</li>
+                    {% endfor %}
+                    </ol>
+                </td>
+                <td><a href="{{ recipe.url }}" target="_blank">View Recipe</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+    function scrapeRecipes() {
+        fetch('/scrape')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').innerText = data.message;
+                setTimeout(() => location.reload(), 2000);
+            });
+    }
+
+    function downloadCSV() {
+        const csv = [
+            ['Name', 'Ingredients', 'Instructions', 'URL'],
+            {% for recipe in recipes %}
+            [
+                '{{ recipe.name | replace("'", "\\'") }}',
+                '{{ recipe.ingredients | join(", ") | replace("'", "\\'") }}',
+                '{{ recipe.instructions | join(". ") | replace("'", "\\'") }}',
+                '{{ recipe.url | replace("'", "\\'") }}'
+            ],
+            {% endfor %}
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, 'myanmar_recipes.csv');
+        } else {
+            link.href = URL.createObjectURL(blob);
+            link.download = 'myanmar_recipes.csv';
+            link.click();
+        }
+    }
+    </script>
+</body>
+</html>
